@@ -1,0 +1,111 @@
+{
+  "info": {
+    "name": "JSONPlaceholder QA Portfolio",
+    "description": "Portfolio API checks against a public mock API. Write operations are simulated.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://jsonplaceholder.typicode.com"
+    }
+  ],
+  "item": [
+    {
+      "name": "GET - List posts",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/posts"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Response is a non-empty array', () => pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty);",
+              "pm.test('First post contains expected fields', () => { const p = pm.response.json()[0]; pm.expect(p).to.have.all.keys('userId', 'id', 'title', 'body'); });",
+              "pm.test('Response time below 1500ms (network dependent)', () => pm.expect(pm.response.responseTime).to.be.below(1500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET - Single post",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/posts/1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Post id is 1 and userId is numeric', () => { const p = pm.response.json(); pm.expect(p.id).to.eql(1); pm.expect(p.userId).to.be.a('number'); });",
+              "pm.test('Title and body are non-empty strings', () => { const p = pm.response.json(); pm.expect(p.title).to.be.a('string').and.not.empty; pm.expect(p.body).to.be.a('string').and.not.empty; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET - Missing post",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/posts/999999"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Unknown post follows documented mock API behavior', () => { pm.expect([200, 404]).to.include(pm.response.code); if (pm.response.code === 200) pm.expect(pm.response.text()).to.eql('{}'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST - Create simulated post",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"QA portfolio API test\",\n  \"body\": \"Created by a Postman demonstration collection\",\n  \"userId\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/posts"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Response contains submitted fields', () => { const p = pm.response.json(); pm.expect(p.title).to.eql('QA portfolio API test'); pm.expect(p.userId).to.eql(1); pm.expect(p).to.have.property('id'); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
